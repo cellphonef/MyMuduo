@@ -13,14 +13,14 @@
 //    ②这两种方式对于可能有大量不可拷贝的类比较麻烦，因此引出了nocopyable类，当一个类不可拷贝时，可以
 //      直接继承该类使其不可拷贝。继承该类的派生类应该能够正常构造和析构。派生类的构造函数会先调用其基类的构造函数，
 //      析构函数会后调用其基类的析构函数，因此基类的构造函数和析构函数对于派生类应该是可访问的且不是删除的。
-class nocopyable {
+class noncopyable {
 public:
-    nocopyable(const nocopyable&) = delete;
-    nocopyable& operator=(const nocopyable&) = delete;
+    noncopyable(const noncopyable&) = delete;
+    noncopyable& operator=(const noncopyable&) = delete;
 
 protected:
-    nocopyable() = default;
-    ~nocopyable() = default;
+    noncopyable() = default;
+    ~noncopyable() = default;
 };
 
 
