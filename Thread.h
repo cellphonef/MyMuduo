@@ -15,11 +15,11 @@ public:
     void join();                               // 线程汇合
 
 private:
-    ThreadFunc func_;                          // 线程执行的具体函数 
-    bool started_;                             // 是否启动
-    bool joined_;                              // 是否汇合
-    std::thread* thread_;                      // 线程句柄
-    pid_t tid;                                 // 线程真实ID
+    ThreadFunc func_;  // 线程执行的具体函数 
+    bool started_;  // 是否启动
+    bool joined_;  // 是否汇合
+    std::unique_ptr<std::thread> threadPtr_;  // 线程句柄
+    pid_t tid;  // 线程真实ID
 
 };
 

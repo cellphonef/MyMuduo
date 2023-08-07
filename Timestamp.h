@@ -15,10 +15,13 @@
 // 
 class Timestamp {
 public:
-
-    static Timestamp now();
-    std::string toString(); 
+    Timestamp();
+    Timestamp(int64_t microSecondsSinceEpoch);
+    ~Timestamp() = default;
+    static Timestamp now();  // 返回当前时间
+    std::string toString();  // 将计算机时间表示为人类易读的时间
 private:
+    int64_t microSecondsSinceEpoch_;  // 从1970年0时0分到现在的毫秒数
 
 };
 
