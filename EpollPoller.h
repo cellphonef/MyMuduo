@@ -19,7 +19,7 @@ public:
     // void removeChannel(Channel* channel) override;
 
 private:
-    void fillActiveChannel(int numEvents, ChannelList* activeChannels);  // 内部使用，用于
+    void fillActiveChannel(int numEvents, ChannelList* activeChannels) const;  // 内部使用，用于
     void update(int operation, Channel* channel);  // 内部函数，用于
 
     int epollfd_;  // epoll文件描述符，用于epoll_xxx函数
