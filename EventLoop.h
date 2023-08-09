@@ -23,6 +23,7 @@ public:
 
     void loop();  // 运行事件循环
 
+    void wakeup();  // 唤醒 
     void updateChannel(Channel* channel);
     void removeChannel(Channel* channel);
 
@@ -40,8 +41,9 @@ public:
 
 private:
     void abortNotInLoopThread();  // 终止程序（当不在EventLoop对象所属线程）
+    void handleRead();  // 内部使用，用于处理wakeupFd可读事件。
     void doPendingFunctors();  // 执行用户提交的回调
-    void wakeup();
+    
 
     // 以下定义的成员中使用const来保证对象在构造时就要初始化且后续不可改变
     // 如EventLoop所属的线程，在创建EventLoop时就必须初始化且后续不可改变
@@ -54,9 +56,18 @@ private:
     bool looping_;
     bool quit_;
 
-    bool callingPendingFunctors_;  // 是否正在执行Functors，可能多个线程访问需要保护
-    std::vector<Functor> pendingFunctors_;  // 存储需要执行的Functors，可能多个线程访问需要保护
+    bool callingPendingFunctors_;  // 是否正在执行Functors，可能多个线程访问需要保护，对其操作应该加锁
+    std::vector<Functor> pendingFunctors_;  // 存储需要执行的Functors，可能多个线程访问需要保护，对其操作应该是原子的
     std::mutex mutex_;  // 用于保护
+
+    int wakeupFd_;  // 唤醒文件描述符
+    Channel wakeupChannel_;  // wakeupChannel生命周期由EventLoop管理
+    
+
+
+
+
+
 
 };
 
