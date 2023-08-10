@@ -14,7 +14,7 @@ public:
     explicit InetAddress(const sockaddr_in& addr);
     ~InetAddress();
 
-    const sockaddr* getSockAddr() const;
+    const sockaddr_in* getSockAddr() const;
     void setSockAddr(const sockaddr_in& addr);
 
 private:
