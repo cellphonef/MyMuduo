@@ -69,6 +69,11 @@ void Channel::disableWriting() {
     ownLoop_->updateChannel(this);
 }
 
+ void Channel::disableAll() {
+    // events_ = kNoneEvent;
+    return;
+ }
+
 bool Channel::isNoneEvent() const {
     return events_ == kNoneEvent;
 }

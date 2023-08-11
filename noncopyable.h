@@ -1,5 +1,5 @@
-#ifndef MYMUDUO_NOCOPYABLE_H
-#define MYMUDUO_NOCOPYABLE_H
+#ifndef MYMUDUO_NONCOPYABLE_H
+#define MYMUDUO_NONCOPYABLE_H
 
 //  不可拷贝基类
 //  

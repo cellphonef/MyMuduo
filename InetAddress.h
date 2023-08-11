@@ -10,9 +10,10 @@
 // 而sockaddr_in是IPv4的专用结构，可以转换成sockaddr
 class InetAddress {
 public:
+    InetAddress() = default;
     explicit InetAddress(uint16_t port, const std::string& ip = "127.0.0.1");
     explicit InetAddress(const sockaddr_in& addr);
-    ~InetAddress();
+    ~InetAddress() = default;
 
     const sockaddr_in* getSockAddr() const;
     void setSockAddr(const sockaddr_in& addr);

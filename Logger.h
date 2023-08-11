@@ -1,7 +1,7 @@
 #ifndef MYMUDUO_LOGGER_H
 #define MYMUDUO_LOGGER_H
 
-#include "nocopyable.h"
+#include "noncopyable.h"
 
 
 //  日志类
@@ -12,7 +12,7 @@
 //      （1）可以定制格式
 //      （2）且具有不同级别（如INFO、DEBUG、ERROR、FATAL等）
 //      （3）可以定制不同的输出位置（如文件、控制台等） 
-class Logger : nocopyable {
+class Logger: noncopyable {
 public:
     enum class Level {
         INFO,
@@ -20,6 +20,8 @@ public:
         ERROR,
         FATAL,
     };
+ 
+    
 
     // 单例模式
     static Logger& getInstance();
@@ -31,8 +33,10 @@ public:
     void log();
 
 private:
-    Logger();
-    ~Logger();
+
+    Logger() = default;
+    ~Logger() = default;
+    
 
     Level level_;
 
