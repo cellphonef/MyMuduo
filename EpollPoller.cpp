@@ -47,6 +47,10 @@ void EpollPoller::updateChannel(Channel* channel) {
     }
 }
 
+void EpollPoller::removeChannel(Channel* channel) {
+    
+}
+
 
 void EpollPoller::fillActiveChannel(int numEvents, ChannelList* activeChannels) const {
     for (int i = 0; i < numEvents; ++i) {

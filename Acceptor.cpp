@@ -4,9 +4,9 @@
 
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& listenAddr, bool reusePort) 
     : loop_(loop), 
-      acceptSocket_(createNonBlockingOrDie()),
+      acceptSocket_(sockets::createNonBlockingOrDie()),
       acceptChannel_(loop, acceptSocket_.fd()) {
-    acceptSocket_.setReuseAddr(true);
+    acceptSocket_.setReuseAddr(true); 
     acceptSocket_.setReusePort(reusePort);
     acceptSocket_.bindAddress(listenAddr);
     acceptChannel_.setReadCallback(std::bind(&Acceptor::handleRead, this));

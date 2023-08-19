@@ -33,7 +33,6 @@ EventLoop::EventLoop()
         wakeupChannel_.setReadCallback(std::bind(&EventLoop::handleRead, this));
         wakeupChannel_.enableReading();
     }
-
 }
 
 EventLoop::~EventLoop() {
@@ -53,14 +52,11 @@ void EventLoop::loop() {
 
         // 开始处理事件
         for (auto channel: activeChannels_) {
-            channel->handleEvent();
+            channel->handleEvent(now);
         }
 
         doPendingFunctors();
     }
-    
- 
-
 }
 
 void EventLoop::updateChannel(Channel* channel) {
@@ -72,7 +68,7 @@ void EventLoop::quit() {
     // EventLoop其所在的IO线程自始至终在执行loop，如果此时在调用quit
     // 则说明不在阻塞，则直接设置quit即可，下次循环检查就会检查到quit并退出 
     if (!isInLoopThread()) {
-         // 唤醒
+         wakeup();
     }   
     
 }

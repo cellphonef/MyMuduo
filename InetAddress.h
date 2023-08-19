@@ -18,11 +18,13 @@ public:
     const sockaddr_in* getSockAddr() const;
     void setSockAddr(const sockaddr_in& addr);
 
+    std::string toIp() const;
+    std::string toIpPort() const;
+    uint16_t toPort() const;
+
 private:
     sockaddr_in addr_;
-
 };
-
 
 
 #endif  // MYMUDUO_INETADDRESS_H

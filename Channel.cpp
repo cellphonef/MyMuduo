@@ -2,6 +2,7 @@
 #include "Channel.h"
 #include "EventLoop.h"
 
+
 #include <sys/epoll.h>
 
 const int Channel::kNoneEvent = 0;
@@ -22,7 +23,7 @@ Channel::~Channel() {
 
 }
 
-void Channel::handleEvent() {
+void Channel::handleEvent(Timestamp receviceTime) {
     // if (revents_ & ) {
 
     // }
@@ -45,8 +46,25 @@ void Channel::handleEvent() {
     }
 }
 
+void Channel::handleEventWithGuard(Timestamp receiveTime) {
+
+}
+
+
 void Channel::setReadCallback(ReadEventCallback cb) {
     readCallback_ = std::move(cb);
+}
+
+void Channel::setWriteCallback(EventCallback cb) {
+    writeCallback_ = std::move(cb);
+}
+
+void Channel::setCloseCallback(EventCallback cb) {
+    closeCallback_ = std::move(cb);
+}
+
+void Channel::setErrorCallback(EventCallback cb) {
+    errorCallback_ = std::move(cb);
 }
 
 void Channel::enableReading() {
@@ -69,10 +87,27 @@ void Channel::disableWriting() {
     ownLoop_->updateChannel(this);
 }
 
- void Channel::disableAll() {
-    // events_ = kNoneEvent;
-    return;
- }
+void Channel::disableAll() {
+    events_ = kNoneEvent;
+}
+
+bool Channel::isWriting() const {
+    return events_ & kWriteEvent;
+}
+
+bool Channel::isReading() const {
+    return events_ & kReadEvent;
+}
+
+void Channel::tie(const std::shared_ptr<void>& obj) {
+    tie_ = obj;
+    tied_ = true;
+}
+
+void Channel::remove() {
+    ownLoop_->removeChannel(this);
+}
+
 
 bool Channel::isNoneEvent() const {
     return events_ == kNoneEvent;

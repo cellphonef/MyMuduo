@@ -1,9 +1,9 @@
 #include "../InetAddress.h"
 #include "../EventLoop.h"
 #include "../Acceptor.h"
-
-#include <stdio.h>
-#include <unistd.h>
+  
+#include <stdio.h>  // for printf
+#include <unistd.h>  // for getpid
 
 void newConnection(int sockfd, const InetAddress& peerAddr) {
     printf("newConnection(): accepted a new connection from %d\n", sockfd);

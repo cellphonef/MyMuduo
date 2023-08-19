@@ -23,8 +23,9 @@ private:
 
     EventLoop* loop_;  // 所属EventLoop
     Socket acceptSocket_;  // 拥有监听文件描述符
-    Channel acceptChannel_;  // 管理监听描述符以及可读事件
-    NewConnectionCallback newConnectionCallback_;
+    Channel acceptChannel_;  // 管理监听文件描述符以及可读事件
+    NewConnectionCallback newConnectionCallback_;  // 新连接到来时的回调函数，用于通知上层如TcpServer，由TcpServer设置
+    int idleFd_;  // 空文件描述符，用于处理文件描述符耗尽的情况
 
 
 

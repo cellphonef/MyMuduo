@@ -18,7 +18,7 @@ public:
     virtual ~Poller() = default;
     virtual Timestamp poll(int timeoutMs, ChannelList* activeChannel) = 0;
     virtual void updateChannel(Channel*) = 0;
-    // virtual void removeChannel(Channel*) = 0;
+    virtual void removeChannel(Channel*) = 0;
 
     void assertNonInLoopThread() const;  // 什么类需要这个方法？
 
