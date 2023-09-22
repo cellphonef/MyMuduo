@@ -23,30 +23,31 @@ public:
                   int sockfd,
                   const InetAddress& localAddr,
                   const InetAddress& peerAddr);
-    ~TcpConnection();
+    ~TcpConnection() = default;
 
 
-    // getter
     EventLoop* getLoop() const;
     const std::string& name() const;
     const InetAddress& localAddress() const;
     const InetAddress& peerAddress() const;
     Buffer* inputBuffer();
     Buffer* outputBuffer();
+    
+    bool connected() const;
 
-    // setter 
     // 设置回调
     void setConnectionCallback(ConnectionCallback cb);
     void setMessageCallback(MessageCallback cb);
     void setWriteCompleteCallback(WriteCompleteCallback cb);
     void setCloseCallback(CloseCallback cb);
+    void setHighWaterMarkCallback(HighWaterMarkCallback Cb);
     
     // 设置连接套接字选项
     void setTcpNoDelay(bool on);
     void setKeepAlive(bool on);
 
 
-    enum StateE {
+    enum class StateE {
         KDisConnected,
         kConnecting,
         kConnected,
@@ -63,8 +64,8 @@ public:
     // 关闭，可跨线程调用
     void shutdown();
 
-    
     bool connected() const;  // 判断是否已经完成连接
+
 
 
     void connectEstablished();  // 需要调用用户回调ConnectionCallback（如有），通知连接建立
@@ -81,22 +82,21 @@ private:
     void sendInLoop(const std::string& message); // send具体实现，确保线程安全
     void shutdownInLoop();  // shutdown的具体实现，确保线程安全
    
-    StateE state_;
 
     EventLoop* loop_;  // 所属的Eventloop
+    std::string name_;  // TcpConection名称
+    StateE state_;  // TcpConnection状态
     std::unique_ptr<Socket> socket_;  // 用于管理该连接对应的套接字生命周期
     std::unique_ptr<Channel> channel_;  // 用于管理该连接对应的事件以及事件处理
-                                        // ？？？疑问：为什么不直接保存对象？
-    
-    std::string name_;
  
     InetAddress localAddr_;  // 本端地址
     InetAddress peerAddr_;  // 远程地址
 
     ConnectionCallback connectionCallback_;  // 连接建立或断开的用户回调，从Accetor继承
     MessageCallback messageCallback_;  // 连接可读的用户回调，从Acceptor继承
-    WriteCompleteCallback writeCompleteCallback_;  // ？？？
-    CloseCallback closeCallback_;  // 内部使用，用于通知上层连接关闭
+    WriteCompleteCallback writeCompleteCallback_;  // 连接写完成的用户回调，从Accetor继承？
+    HighWaterMarkCallback highWaterMarkCallback_;  // 高水位的用户回调
+    CloseCallback closeCallback_;  // 内部使用，用于通知上层（TcpServer或TcpClient）连接关闭
 
     Buffer inputBuffer_;  // 输入缓冲区，缓存连接待处理数据避免阻塞
     Buffer outputBuffer_;  // 输出缓冲区，缓存连接待发送数据避免阻塞

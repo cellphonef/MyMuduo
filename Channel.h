@@ -13,7 +13,7 @@ public:
     using ReadEventCallback = std::function<void(Timestamp)> ;
     using EventCallback = std::function<void()>;
     Channel(EventLoop* loop, int fd);
-    ~Channel();
+    ~Channel() = default;
 
     // 处理发生的事件
     void handleEvent(Timestamp receiveTime);  
@@ -35,7 +35,7 @@ public:
 
     void tie(const std::shared_ptr<void>&);  // 绑定
 
-    void remove();
+    void remove();  // 从
 
     // getter/setter
     bool isNoneEvent() const;  // 是否未在监听任何事件

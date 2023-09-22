@@ -1,6 +1,8 @@
 #include "EventLoop.h"
 #include "CurrentThread.h"
 #include "EPollPoller.h"
+#include "Logger.h"
+#include  "Channel.h"
 
 #include <sys/eventfd.h>
 
@@ -12,7 +14,7 @@ const int kPollTimeoutMs = 10000;
 int createEventfd() {
     int evfd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (evfd < 0) {
-        // 错误处理
+        LOG_ERROR("");
     }
     return evfd;
 }
@@ -24,21 +26,21 @@ EventLoop::EventLoop()
       threadId_(CurrentThread::tid()),
       poller_(new EpollPoller(this)),
       wakeupFd_(createEventfd()),
-      wakeupChannel_(this, wakeupFd_) {
+      wakeupChannel_(new Channel(this, wakeupFd_)) {
     // 检查所属线程是否已经存在EventLoop对象
     if (t_loopInThisThread) {
         // 退出程序
     } else {
         t_loopInThisThread = this;
-        wakeupChannel_.setReadCallback(std::bind(&EventLoop::handleRead, this));
-        wakeupChannel_.enableReading();
+        wakeupChannel_->setReadCallback(std::bind(&EventLoop::handleRead, this));
+        wakeupChannel_->enableReading();
     }
 }
 
 EventLoop::~EventLoop() {
     looping_ = false;
     t_loopInThisThread = nullptr;
-    wakeupChannel_.disableAll();
+    wakeupChannel_->disableAll();
     close(wakeupFd_);
 }
 
@@ -73,7 +75,7 @@ void EventLoop::quit() {
     
 }
 
-// 可能跨线程调用，需要加锁
+// 可能跨线程调用，
 void EventLoop::runInLoop(const Functor& cb) {
     if (isInLoopThread()) {
         cb();
@@ -82,7 +84,7 @@ void EventLoop::runInLoop(const Functor& cb) {
     }
 }
 
-// 可能跨线程调用，需要加锁
+// 可能跨线程调用
 void EventLoop::queueInLoop(const Functor& cb) {
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -116,7 +118,7 @@ void EventLoop::wakeup() {
     ssize_t n = write(wakeupFd_, &one, sizeof(one));
 
     if (n != sizeof(one)) {
-        // 错误处理
+        LOG_ERROR("EventLoop wakeup");
     }
 }
 
@@ -124,14 +126,13 @@ void EventLoop::handleRead() {
     uint64_t one = 1;
     ssize_t n = read(wakeupFd_, &one, sizeof(one));
     if (n != sizeof(one)) {
-        // 错误处理
+        LOG_ERROR("EventLoop::handleRead");
     }
 }
 
 bool EventLoop::isInLoopThread() {
     return CurrentThread::tid() == threadId_;
 }
-
 
 void EventLoop::assertInLoopThread() {
     if (!isInLoopThread()) {
@@ -140,5 +141,5 @@ void EventLoop::assertInLoopThread() {
 }
 
 void EventLoop::abortNotInLoopThread() {
-    exit(1);
+    LOG_FATAL("EventLoop::abortNotInLoopThread");
 }

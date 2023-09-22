@@ -60,14 +60,7 @@ private:
 
     int wakeupFd_;  // 唤醒文件描述符
     std::unique_ptr<Channel> wakeupChannel_;  // wakeupChannel生命周期由EventLoop管理
-
-
-
-
-
-
 };
-
 
 
 #endif  // MYMUDUO_EVENTLOOP_H

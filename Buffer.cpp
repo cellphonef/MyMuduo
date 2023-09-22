@@ -1,6 +1,63 @@
 #include "Buffer.h"
-
 #include "SocketOps.h"
+
+Buffer::Buffer(size_t initialSize)
+    : buffer_(kCheapPrepend + initialSize),
+      readerIndex_(kCheapPrepend),
+      writerIndex_(readerIndex_) {}
+
+size_t Buffer::readableBytes() const {
+    return writerIndex_ - readerIndex_;
+}
+
+size_t Buffer::writableBytes() const {
+    return buffer_.size() - writerIndex_;
+}
+
+size_t Buffer::prependableBytes() const {
+    return readerIndex_;
+}
+
+const char* Buffer::peek() const {
+    return begin() + readerIndex_;
+}
+
+void Buffer::retrieve(size_t len) {
+    if (len < readableBytes()) {
+        readerIndex_ += len;
+    } else {
+        retrieveAll();
+    }
+}
+
+void Buffer::retrieveUntil(const char* end) {
+    retrieve(end - peek());
+}
+
+void Buffer::retrieveAll() {
+    readerIndex_ = kCheapPrepend;
+    writerIndex_ = kCheapPrepend;
+}
+
+void Buffer::append(const char* data, size_t len) {
+    ensureWritableBytes(len);
+    std::copy(data, data+len, beginWrite());
+    writerIndex_ += len;
+}
+
+char* Buffer::beginWrite() {
+    return begin() + writerIndex_;
+}
+const char* Buffer::beginWrite() const {
+    return begin() + writerIndex_;
+
+}
+
+void Buffer::ensureWritableBytes(size_t len) {
+    if (writableBytes() < len) {
+        makeSpace(len);
+    }
+}
 
 ssize_t Buffer::readFd(int fd, int* savedErrno) {
     char extrabuf[65535];
@@ -27,67 +84,13 @@ ssize_t Buffer::readFd(int fd, int* savedErrno) {
 
 }
 
-size_t Buffer::readableBytes() const {
-    return writerIndex_ - readerIndex_;
-}
-size_t Buffer::writableBytes() const {
-    return buffer_.size() - writerIndex_;
-}
-size_t Buffer::prependableBytes() const {
-    return readerIndex_;
-}
+ssize_t Buffer::writeFd(int fd, int* savedErrno) {
+    ssize_t n = sockets::write(fd, peek(), readableBytes());
 
-// 
-const char* Buffer::peek() const {
-    return begin() + readerIndex_;
-}
-
-void Buffer::retrieve(size_t len) {
-    if (len < readableBytes()) {
-        readerIndex_ += len;
-    } else {
-        retrieveAll();
+    if (n < 0) {
+        *savedErrno = errno;
     }
-
-}
-void Buffer::retrieveUntil(const char* end) {
-    retrieve(end - peek());
-}
-
-void Buffer::retrieveAll() {
-    readerIndex_ = kCheapPrepend;
-    writerIndex_ = kCheapPrepend;
-
-}
-
-void Buffer::append() {
-
-
-}
-void Buffer::append(const char* data, size_t len) {
-    ensureWritableBytes(len);
-    std::copy(data, data+len, beginWrite());
-}
-void Buffer::append(const void* data, size_t len) {
-
-}
-
-void Buffer::ensureWritableBytes(size_t len) {
-    if (writableBytes() < len) {
-        makeSpace(len);
-    }
-}
-
-char* Buffer::beginWrite() {
-    return begin() + writerIndex_;
-}
-const char* Buffer::beginWrite() const {
-    return begin() + writerIndex_;
-
-}
-
-void Buffer::hasWritten(size_t len) {
-    writerIndex_ += len;
+    return n;
 }
 
 char* Buffer::begin() {
@@ -111,4 +114,7 @@ void Buffer::makeSpace(size_t len) {
         writerIndex_ = readerIndex_ + readable;
     }
 }
+
+
+
 

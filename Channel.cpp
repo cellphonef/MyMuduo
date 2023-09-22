@@ -14,42 +14,52 @@ Channel::Channel(EventLoop* loop, int fd)
       fd_(fd),
       events_(kNoneEvent),
       revents_(kNoneEvent),
-      index_(-1) {
-    
+      index_(-1) {}
 
-}
-
-Channel::~Channel() {
-
-}
 
 void Channel::handleEvent(Timestamp receviceTime) {
-    // if (revents_ & ) {
+    if (tied_) {
+        std::shared_ptr<void> guard = tie_.lock();  // 提升
+        if (guard) {  // 提升成功
+            handleEventWithGuard(receviceTime);  // 能够保证handleEvent的执行过程中，TcpConnection不会析构
+        }
+    } else {
+        handleEventWithGuard(receviceTime);
+    }
 
-    // }
-    
+    // 当handleEvent执行完后，对应的shared_ptr析构，TcpConnection析构
+}
+
+void Channel::handleEventWithGuard(Timestamp receiveTime) {
+
+    // EPOLLRDHUP: Stream socket peer closed connection, or shut down writing half of connection.
+    // EPOLLPRI: There is an exceptional condition on the file descriptor.
+    // EPOLLERR: Error condition happened on the associated file descriptor.
+
+    if ((revents_ & EPOLLRDHUP) && !(revents_ & EPOLLIN)) {
+        if (closeCallback_) {
+            closeCallback_();
+        }
+    }
+
     if (revents_ & EPOLLERR) {  // 错误
         if (errorCallback_) {
             errorCallback_();
         }
     }
 
-    if (revents_ & EPOLLIN) {  // 可读
+    if (revents_ & (EPOLLPRI | EPOLLIN)) {  // 可读
         if (readCallback_) {
-            readCallback_();
+            readCallback_(receiveTime);
         }
     }
+
     if (revents_ & EPOLLOUT) {  // 可写
         if (writeCallback_) {
             writeCallback_();
         }
     }
 }
-
-void Channel::handleEventWithGuard(Timestamp receiveTime) {
-
-}
-
 
 void Channel::setReadCallback(ReadEventCallback cb) {
     readCallback_ = std::move(cb);
